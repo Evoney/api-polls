@@ -1,0 +1,41 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Poll {
+  id        String       @id @default(uuid())
+  title     String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now())
+  options   PollOption[]
+  votes     Vote[]
+}
+
+model PollOption {
+  id     String @id @default(uuid())
+  title  String
+  poll   Poll   @relation(fields: [pollId], references: [id])
+  pollId String
+  votes  Vote[]
+}
+
+model Vote {
+  id Int @id @default(autoincrement())
+
+  sessionId    String
+  pollOptionId String
+
+  pollOption PollOption @relation(fields: [pollOptionId], references: [id])
+  poll       Poll       @relation(fields: [pollId], references: [id])
+
+  createdAt DateTime @default(now())
+  pollId    String
+
+  @@unique([sessionId, pollId])
+}
